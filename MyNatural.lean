@@ -54,10 +54,9 @@ theorem add_assoc {m n p : ℕ} : (m + n) + p = m + (n + p) := by
     rw [add_assoc]
 
 theorem add_zero {n : ℕ} : n + 𝕫 = n := by
-  match n with
-  | 𝕫 => rfl
-  | 𝕤 n' => 
-    rw [succ_add, add_zero]
+  cases n
+  · rfl
+  · rw [succ_add, add_zero]
 
 theorem add_comm {m n : ℕ} : m + n = n + m := by
   cases m
