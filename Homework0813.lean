@@ -8,14 +8,16 @@ def f1 := fun (a b c d : Nat) => (a + c) * (b + d)
 -- `Exercise 2:` Please define a function `f2` with mathematical formula given by
 -- `f2 : ℕ × ℕ × ℕ → ℕ, (a, b, c, d) ↦ (a + c) * (d + b)`
 -- You are required to use the tactic `intro`.
-def f2 : Nat → Nat → Nat → Nat → Nat := by
-  intro a b c d
+def f2 : Nat × Nat × Nat × Nat → Nat := by
+  intro ⟨a, b, c, d⟩
   exact (a + c) * (b + d)
 
 -- `Exercise 3:` Please define a function `f3 : ℕ → (ℕ × ℕ × ℕ → ℕ)`, satisfying that
 -- `∀ a, b, c, d : ℕ, f3(c)(a,b,d)=f2(a,b,c,d)`,
 -- where `f2` is the function in `Exercise 2`.
-def f3 (c a b d : Nat) := f2 a b c d
+def f3 : Nat → (Nat × Nat × Nat → Nat) := by
+  intro c ⟨a, b, d⟩
+  exact f2 ⟨a, b, c, d⟩
 
 -- `Exercise 4:` Please define 2 dependent functions, i.e. provide the term(s) of the corresponding dependent function type(s). No `sorry` or external variable is allowed.
 def f4 (n : Nat) := n
@@ -24,7 +26,7 @@ def f5 (m n : Nat) := m + n
 -- `Exercise 5:` Please give 2 dependent functions types which is impossible to construct a term.
 -- You should explain the reason.
 def t1 := (n : Nat) → False
-def t2 := (n : Nat) → (A : Type) → A
+def t2 := (A : Type) → A
 
 -- `Exercise 6:` Consider the following functions:
 def g1 : Nat → Nat → Nat → Nat → Nat := λ a b c d ↦ (a + b) * (c + d)
@@ -37,7 +39,7 @@ example : g1 = g2 := by
   unfold g1 g2
   rw [mul_add, add_mul, add_mul, ← add_assoc]
   nth_rw 1 [mul_comm]  -- 1 3
-  nth_rw 3 [mul_comm]  -- 
+  nth_rw 3 [mul_comm]  -- 3 0
 -- `Tips:` You can try `unfold g1 g2` at certain point in your proof.
 
 -- `Exercise 7:` Consider the following functions:
@@ -59,3 +61,7 @@ example : ¬ g1' = g2' := by
   linarith
 
 -- If you are unable to do so, please analysis the reason of your failure.
+/-
+ - Reason: In `Nat`, if n is greater than m (intuitively),
+ -   then by definition (m - n) can only be 0.
+ -/
