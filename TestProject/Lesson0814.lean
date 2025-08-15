@@ -207,7 +207,11 @@ example (x : Nat) (h : x = 5 ∨ x = 7) : ∃ y : Nat, x = y * 2 + 1 := by
 
 -- `4. disjunction in the goal`
 example (x : Int) (h : x * x + 35 = 12 * x) : x = 5 ∨ x = 7 := by
-  have : (x - 6) * (x - 6) - 1 = 0 := by ring
+  have : (x - 6) * (x - 6) - 1 = 0 := by
+    ring_nf
+    rw [← mul_comm 12 x, ← h]
+    ring
+  sorry
 
 -- This is a easy one.
 -- `Slogan:` If you want to prove `P ∨ Q`, you can just choose one of `P` and `Q` to prove.
