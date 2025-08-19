@@ -157,7 +157,9 @@ open Set
 /-
 ### How to name a theorem?
 
-Theorem names use **snake_case** and generally follow the pattern "conclusion + of + condition1 + of + condition2...". The word "of" is used to link multiple conditions, as seen in some examples above. However, well-known theorems, like **wilsons_lemma**, usually keep their more familiar names.
+Theorem names use **snake_case** and generally follow the pattern "conclusion + of + condition1 + of
++ condition2...". The word "of" is used to link multiple conditions, as seen in some examples above.
+However, well-known theorems, like **wilsons_lemma**, usually keep their more familiar names.
 -/
 
 namespace Examples
@@ -425,14 +427,21 @@ example : |(3 : ℝ) - 7| = 4 := by
   norm_num    -- `norm_num` can also handle absolute values.
 
 example {x : Nat} : x + 0 = x := by
-  norm_num    -- `norm_num` sometimes calls `simp`, for example, this goal is not a pure numerical expression, but `norm_num` can still handle it.
+  norm_num    -- `norm_num` sometimes calls `simp`, for example, this goal is not a pure numerical
+              -- expression, but `norm_num` can still handle it.
 
 /-
-It is worth noting that `norm_num` cannot handle floating-point numbers. Also, it sometimes calls `simp` for simplification, as shown in the last example above, where the goal is not a purely numerical expression but `norm_num` still succeeds.
+It is worth noting that `norm_num` cannot handle floating-point numbers. Also, it sometimes calls
+`simp` for simplification, as shown in the last example above, where the goal is not a purely
+numerical expression but `norm_num` still succeeds.
 
 -----
 
-4.  `positivity`. `positivity` is used to handle goals of the form `0 ≤ x`, `0 < x`, and `x ≠ 0`. It's also a terminal tactic, so it either solves the goal or reports an error. Its working principle is somewhat complex, but to put it simply, `positivity` analyzes complex expressions by combining them with the lower bounds of variables, breaking them down into simpler numerical expressions of the three forms mentioned above, and then proving each one using `norm_num`.
+4.  `positivity`. `positivity` is used to handle goals of the form `0 ≤ x`, `0 < x`, and `x ≠ 0`.
+It's also a terminal tactic, so it either solves the goal or reports an error. Its working principle
+is somewhat complex, but to put it simply, `positivity` analyzes complex expressions by combining
+them with the lower bounds of variables, breaking them down into simpler numerical expressions of
+the three forms mentioned above, and then proving each one using `norm_num`.
 -/
 
 example {a : ℤ} (ha : 3 < a) : 0 ≤ a ^ 3 + a := by
@@ -458,11 +467,16 @@ example (x : ℝ) (hx : 0 < x) : 0 < 5 - (-x) := by
   sorry
 
 /-
-As we can see, `positivity` successfully solves the first two examples. The next three examples cannot be solved by `positivity` because their proof goals are not of the three specific forms. The last example is interesting: `positivity` cannot directly analyze this expression, but after we run `norm_num`, the expression becomes `0 < 5 + x`, which can then be solved by `positivity`.
+As we can see, `positivity` successfully solves the first two examples. The next three examples cannot be
+solved by `positivity` because their proof goals are not of the three specific forms. The last example is
+interesting: `positivity` cannot directly analyze this expression, but after we run `norm_num`,
+the expression becomes `0 < 5 + x`, which can then be solved by `positivity`.
 
 -----
 
-5.  `ring`/`ring_nf`/`noncomm_ring` & `group`/`abel`. As their names suggest, these automation tactics are used to handle commutative rings, non-commutative rings, groups, and commutative groups, respectively. We'll use `ring` as an example to introduce a few use cases; the other tactics have similar usage.
+5.  `ring`/`ring_nf`/`noncomm_ring` & `group`/`abel`. As their names suggest, these automation tactics are
+used to handle commutative rings, non-commutative rings, groups, and commutative groups, respectively.
+We'll use `ring` as an example to introduce a few use cases; the other tactics have similar usage.
 -/
 
 example {x y : ℤ} : (x + y) ^ 2 = x ^ 2 + 2 * x * y + y ^ 2 := by
@@ -486,11 +500,13 @@ example {G : Type} [AddCommGroup G] (a b : G) : 2 • (a - b) + a + b = 3 • a 
   abel
 
 /-
-From the examples, we can see that when using `ring`-related tactics, you often need to simplify the goal to a certain extent before these automation tactics can complete the proof.
+From the examples, we can see that when using `ring`-related tactics, you often need to simplify
+the goal to a certain extent before these automation tactics can complete the proof.
 
 -----
 
-6.  `field_simp`. `field_simp` is an automation tactic used to simplify division expressions, often in contexts involving division and inverses. We can understand its functionality through a few examples.
+6.  `field_simp`. `field_simp` is an automation tactic used to simplify division expressions,
+often in contexts involving division and inverses. We can understand its functionality through a few examples.
 -/
 
 example (x : ℝ) (h : x > 0) : 1 / x + 1 = (x + 1) / x := by
@@ -505,11 +521,20 @@ example {a b : ℝ} (h : b ≠ 1) : a = (a * b - a) / (b - 1) := by
   ring
 
 /-
-Note that in one of the examples above, `field_simp` and `ring` are used in combination. This makes sense: `ring` handles goals related to commutative rings (only addition, subtraction, and multiplication), while `field_simp` can handle division. Together, they can solve some simple arithmetic problems. In the last example, we can provide arguments to `field_simp` using a list, extending its search scope and improving its simplification ability.
+Note that in one of the examples above, `field_simp` and `ring` are used in combination.
+This makes sense: `ring` handles goals related to commutative rings
+(only addition, subtraction, and multiplication), while `field_simp` can handle division.
+Together, they can solve some simple arithmetic problems. In the last example, we can provide arguments
+to `field_simp` using a list, extending its search scope and improving its simplification ability.
 
 -----
 
-7.  `omega`. Finally, let's introduce the very powerful automation tactic: `omega`. It is used to handle all propositions related to natural numbers, and its underlying mechanism is quite complex. Currently, it can handle addition, subtraction, and multiplication of natural numbers (where division is floor division), but it is almost "clueless" about the modulo operation. At some point in the future, its functionality will be improved, making it a powerful tool for proving natural number-related propositions\!
+7.  `omega`. Finally, let's introduce the very powerful automation tactic: `omega`.
+It is used to handle all propositions related to natural numbers, and its underlying mechanism
+is quite complex. Currently, it can handle addition, subtraction, and multiplication of
+natural numbers (where division is floor division), but it is almost "clueless" about the modulo operation
+At some point in the future, its functionality will be improved,
+making it a powerful tool for proving natural number-related propositions\!
 -/
 
 example {x} : x ≥ 1 → x + 1 ≤ 2 * x := by omega
@@ -529,7 +554,9 @@ example (x : Nat) : x * (x + 1) % 2 = 0 := by
   omega
 
 /-
-As you can see, in the last three examples, `omega` can solve the goal for relatively simple modulo operations. It can also solve the goal after being provided with some theorems. However, we would ideally want `omega` to be able to find these theorems itself.
+As you can see, in the last three examples, `omega` can solve the goal for relatively simple modulo operations.
+It can also solve the goal after being provided with some theorems.
+However, we would ideally want `omega` to be able to find these theorems itself.
 -/
 
 section exercise
