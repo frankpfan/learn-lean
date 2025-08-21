@@ -1,8 +1,10 @@
 import Mathlib
 
+noncomputable section
 /-
 First we define the structure of points on 2 dimensional Euclidean space.
 -/
+@[ext]
 structure Point where
   x : ℝ
   y : ℝ
@@ -62,15 +64,17 @@ Bonus: define the circumcenter (the point that have same distance to the vertice
 -/
 
 /- coef_x * (y - base.y) = coef_y * (x - base.x) -/
-structure Line where  -- TODO: non_singular
+structure Line where
   base : Point
   coef_x : ℝ
   coef_y : ℝ
+  non_singular : coef_x ≠ 0 ∨ coef_y ≠ 0
 
-structure StandardizedLine where  -- TODO: non_singular
+structure StandardizedLine where
   A : ℝ
   B : ℝ
   C : ℝ
+  non_singular : A ≠ 0 ∨ B ≠ 0
 
 namespace Line
 
@@ -78,40 +82,63 @@ def standardize (m : Line) : StandardizedLine where
   A := m.coef_y
   B := - m.coef_x
   C := m.coef_x * m.base.y - m.coef_y * m.base.x
+  non_singular := by
+    have h := m.non_singular
+    grind
+
+instance instLineStandard : Coe Line StandardizedLine where
+  coe := standardize
 
 end Line
 
 namespace StandardizedLine
 
-def intersection (m n : StandardizedLine) : Point := by  -- TODO: not parallel
-  have Δ := m.A * n.B - n.A * m.B
-  have Δx := m.B * n.C - n.B * m.C
-  have Δy := m.C * n.A - n.C * m.A
+def intersection (m n : StandardizedLine) (hnp : m.A * n.B ≠ m.B * n.A) : Point := by
+  let Δ := m.A * n.B - n.A * m.B
+  have : Δ ≠ 0 := by grind
+  let Δx := m.B * n.C - n.B * m.C
+  let Δy := m.C * n.A - n.C * m.A
   exact Point.mk (Δx / Δ) (Δy / Δ)
 
 end StandardizedLine
 
 namespace Point
 
-def perpendicularBisector (A B : Point) : Line where
+def perpendicularBisector (A B : Point) (h : A ≠ B) : Line where
   base := ⟨(A.x + B.x) / 2, (A.y + B.y) / 2⟩
   coef_x := A.y - B.y
   coef_y := B.x - A.x
+  non_singular := by
+    have : ¬ (A.x = B.x ∧ A.y = B.y) := by
+      intro g
+      rcases g with ⟨left, right⟩
+      apply h
+      exact Point.ext left right
+    grind
 
 def distance (P Q : Point) : ℝ :=
   Real.sqrt ((P.x - Q.x) ^ 2 + (P.y - Q.y) ^ 2)
 
 end Point
 
-/- Made it! But `Real` is noncomputable so I can't easily verify its correctness. -/
-def Triangle.circumcenter (t : Triangle) : Point := by
+/-
+ - Made it! But `Real` is noncomputable so I can't easily verify its correctness.
+ - (But by replacing ℝ with ℚ, I have found it is correct.)
+ - But it's just hard to prove the existence of the intersection point. So `sorry`.
+ -/
+def Triangle.circumcenter (t : Triangle) (h1 : t.A ≠ t.B) (h2 : t.B ≠ t.C) (h3 : t.C ≠ t.A)
+  : Point := by
   rcases t with ⟨A, B, C⟩
-  apply StandardizedLine.intersection
-  · apply Line.standardize
-    exact Point.perpendicularBisector A B
-  · apply Line.standardize
-    exact Point.perpendicularBisector B C
+  simp at h1 h2 h3 
+  let m : StandardizedLine := by
+    exact ↑(Point.perpendicularBisector A B h1)  -- Coerce the line using `standardize`.
+  let n : StandardizedLine := by
+    exact ↑(Point.perpendicularBisector B C h2)  -- Same.
+  apply StandardizedLine.intersection m n
+  sorry
 
 theorem Triangle.circumcenter_distance (t : Triangle)
   : Point.distance t.A t.circumcenter = Point.distance t.B t.circumcenter := by
   sorry
+
+end
